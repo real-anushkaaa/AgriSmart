@@ -7,6 +7,12 @@ class Settings(BaseSettings):
     app_env: str = "development"
     api_v1_prefix: str = "/api/v1"
 
+    db_host: str = "localhost"
+    db_port: int = 3306
+    db_name: str = "agrismart_db"
+    db_user: str = "agrismart_app"
+    db_password: str = ""
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
