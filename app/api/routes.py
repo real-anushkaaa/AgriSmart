@@ -1,3 +1,5 @@
+from app.ml.soybean_disease_predictor import predict_soybean_disease
+from app.schemas.soybean_disease import SoybeanDiseasePredictionResponse
 from fastapi import File, UploadFile
 from app.ml.tomato_disease_predictor import predict_tomato_disease
 from app.schemas.tomato_disease import TomatoDiseasePredictionResponse
@@ -203,5 +205,44 @@ async def predict_tomato_disease_endpoint(
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Tomato disease model is unavailable.",
+        )
+
+
+@router.post(
+    "/api/v1/diseases/soybean/predict",
+    response_model=SoybeanDiseasePredictionResponse,
+    tags=["Soybean Disease Detection"],
+)
+async def predict_soybean_disease_endpoint(
+    file: UploadFile = File(...),
+):
+    if not file.content_type or not file.content_type.startswith("image/"):
+        raise HTTPException(
+            status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            detail="Please upload an image file.",
+        )
+
+    image_bytes = await file.read()
+
+    if not image_bytes:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Uploaded image is empty.",
+        )
+
+    try:
+        result = predict_soybean_disease(image_bytes)
+        return SoybeanDiseasePredictionResponse(**result)
+
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        ) from exc
+
+    except (FileNotFoundError, RuntimeError):
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Soybean disease model is unavailable.",
         )
 
