@@ -1,4 +1,5 @@
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -19,6 +20,19 @@ class Settings(BaseSettings):
     # Google Gemini API settings
     gemini_api_key: str = ""
     gemini_model: str = "gemini-3.8-flash"
+
+    # API safety and browser client settings
+    api_access_token: str = ""
+    cors_origins: str = ""
+    max_image_upload_bytes: int = Field(default=10 * 1024 * 1024, gt=0)
+
+    @property
+    def cors_origin_list(self) -> list[str]:
+        return [
+            origin.strip()
+            for origin in self.cors_origins.split(",")
+            if origin.strip()
+        ]
 
     # Environment configuration
     model_config = SettingsConfigDict(

@@ -1,6 +1,7 @@
 
 from pathlib import Path
 import json
+import tempfile
 
 import numpy as np
 import tensorflow as tf
@@ -100,6 +101,12 @@ def main():
     if len(image_paths) == 0:
         raise ValueError("No supported images found.")
 
+    class_counts = np.bincount(labels, minlength=len(class_names))
+    if class_counts.min() < 4:
+        raise ValueError(
+            "Each class needs at least four images for stratified train/validation/test splits."
+        )
+
     # 70% train, 15% validation, 15% test.
     train_paths, remaining_paths, train_labels, remaining_labels = (
         train_test_split(
@@ -186,35 +193,33 @@ def main():
     model.summary()
 
     ARTIFACTS_DIR.mkdir(parents=True, exist_ok=True)
-
-    callbacks = [
-        tf.keras.callbacks.EarlyStopping(
-            monitor="val_loss",
-            patience=3,
-            restore_best_weights=True,
-        ),
-        tf.keras.callbacks.ModelCheckpoint(
-            filepath=str(
-                ARTIFACTS_DIR / "tomato_disease_best.keras"
+    with tempfile.TemporaryDirectory(
+        prefix="tomato-checkpoint-",
+        dir=ARTIFACTS_DIR,
+    ) as checkpoint_dir:
+        checkpoint_path = Path(checkpoint_dir) / "best.keras"
+        callbacks = [
+            tf.keras.callbacks.EarlyStopping(
+                monitor="val_loss",
+                patience=3,
+                restore_best_weights=True,
             ),
-            monitor="val_loss",
-            save_best_only=True,
-        ),
-    ]
+            tf.keras.callbacks.ModelCheckpoint(
+                filepath=str(checkpoint_path),
+                monitor="val_loss",
+                save_best_only=True,
+            ),
+        ]
 
-    print("\nStarting training...")
-    model.fit(
-        train_ds,
-        validation_data=val_ds,
-        epochs=EPOCHS,
-        class_weight=class_weights,
-        callbacks=callbacks,
-    )
-
-    # Evaluate only after training, on the held-out test set.
-    best_model = tf.keras.models.load_model(
-        ARTIFACTS_DIR / "tomato_disease_best.keras"
-    )
+        print("\nStarting training...")
+        model.fit(
+            train_ds,
+            validation_data=val_ds,
+            epochs=EPOCHS,
+            class_weight=class_weights,
+            callbacks=callbacks,
+        )
+        best_model = tf.keras.models.load_model(checkpoint_path)
 
     probabilities = best_model.predict(test_ds)
     predictions = np.argmax(probabilities, axis=1)
@@ -264,6 +269,7 @@ def main():
         "validation_images": len(val_paths),
         "test_images": len(test_paths),
         "random_seed": RANDOM_SEED,
+        "evaluation_note": "Single stratified holdout; interpret metrics alongside per-class support.",
     }
 
     with open(

@@ -1,0 +1,283 @@
+{
+  "mae": 14.534715012901813,
+  "median_absolute_error": 0.13157096970502558,
+  "rmse": 292.22159627850044,
+  "r2": 0.8934233491473357,
+  "per_crop": {
+    "Arecanut": {
+      "support": 37,
+      "mae": 0.39599342695488066,
+      "median_absolute_error": 0.12378753403177867
+    },
+    "Arhar/Tur": {
+      "support": 107,
+      "mae": 0.10606567894958839,
+      "median_absolute_error": 0.07396186480918765
+    },
+    "Bajra": {
+      "support": 99,
+      "mae": 0.8324070591934394,
+      "median_absolute_error": 0.14284088785937787
+    },
+    "Banana": {
+      "support": 56,
+      "mae": 5.713576447591424,
+      "median_absolute_error": 3.354799835158234
+    },
+    "Barley": {
+      "support": 52,
+      "mae": 0.23412440741669668,
+      "median_absolute_error": 0.1493137331339215
+    },
+    "Black pepper": {
+      "support": 22,
+      "mae": 0.32460987331927993,
+      "median_absolute_error": 0.11495519735854556
+    },
+    "Cardamom": {
+      "support": 17,
+      "mae": 0.20386213651434962,
+      "median_absolute_error": 0.0678199883586554
+    },
+    "Cashewnut": {
+      "support": 27,
+      "mae": 0.23585004296238862,
+      "median_absolute_error": 0.12203892553986159
+    },
+    "Castor seed": {
+      "support": 66,
+      "mae": 0.1473876513090372,
+      "median_absolute_error": 0.07758039787300564
+    },
+    "Coconut": {
+      "support": 34,
+      "mae": 1594.9630918421326,
+      "median_absolute_error": 746.946006055658
+    },
+    "Coriander": {
+      "support": 49,
+      "mae": 0.31819996423626157,
+      "median_absolute_error": 0.0869737932420444
+    },
+    "Cotton(lint)": {
+      "support": 98,
+      "mae": 0.5378257200191678,
+      "median_absolute_error": 0.3038715585503601
+    },
+    "Cowpea(Lobia)": {
+      "support": 25,
+      "mae": 0.2287460250116155,
+      "median_absolute_error": 0.13875746741509687
+    },
+    "Dry chillies": {
+      "support": 89,
+      "mae": 0.37121914922796845,
+      "median_absolute_error": 0.14583993057683076
+    },
+    "Garlic": {
+      "support": 31,
+      "mae": 0.6391282519583048,
+      "median_absolute_error": 0.2471929086831084
+    },
+    "Ginger": {
+      "support": 78,
+      "mae": 2.0727892950277647,
+      "median_absolute_error": 0.5793209422854317
+    },
+    "Gram": {
+      "support": 103,
+      "mae": 0.21419804228596595,
+      "median_absolute_error": 0.09402388866756317
+    },
+    "Groundnut": {
+      "support": 147,
+      "mae": 0.18200969220617497,
+      "median_absolute_error": 0.1197094039345814
+    },
+    "Guar seed": {
+      "support": 13,
+      "mae": 0.2141129935950192,
+      "median_absolute_error": 0.13898325155600644
+    },
+    "Horse-gram": {
+      "support": 68,
+      "mae": 0.10291487958781885,
+      "median_absolute_error": 0.07805139754976984
+    },
+    "Jowar": {
+      "support": 102,
+      "mae": 0.15497286715062206,
+      "median_absolute_error": 0.11107175646696243
+    },
+    "Jute": {
+      "support": 35,
+      "mae": 1.3653182908844872,
+      "median_absolute_error": 0.89306730086615
+    },
+    "Khesari": {
+      "support": 15,
+      "mae": 0.16040660070696752,
+      "median_absolute_error": 0.09608595181268598
+    },
+    "Linseed": {
+      "support": 65,
+      "mae": 0.0815531251683919,
+      "median_absolute_error": 0.05374869354552092
+    },
+    "Maize": {
+      "support": 197,
+      "mae": 0.5618203441067795,
+      "median_absolute_error": 0.21427053163426812
+    },
+    "Masoor": {
+      "support": 69,
+      "mae": 0.10872504400734952,
+      "median_absolute_error": 0.051311142152570044
+    },
+    "Mesta": {
+      "support": 39,
+      "mae": 1.450803670522355,
+      "median_absolute_error": 0.6444557414201739
+    },
+    "Moong(Green Gram)": {
+      "support": 146,
+      "mae": 0.08824720345621018,
+      "median_absolute_error": 0.05567774894585421
+    },
+    "Moth": {
+      "support": 19,
+      "mae": 0.12381669717208325,
+      "median_absolute_error": 0.09556180784011976
+    },
+    "Niger seed": {
+      "support": 41,
+      "mae": 0.08220851952975233,
+      "median_absolute_error": 0.05590312209407833
+    },
+    "Oilseeds total": {
+      "support": 5,
+      "mae": 0.5866304729704186,
+      "median_absolute_error": 0.18319996614509848
+    },
+    "Onion": {
+      "support": 93,
+      "mae": 2.453303328281793,
+      "median_absolute_error": 1.2379020208234799
+    },
+    "Other  Rabi pulses": {
+      "support": 76,
+      "mae": 0.13421449523857698,
+      "median_absolute_error": 0.0844417702533149
+    },
+    "Other Cereals": {
+      "support": 28,
+      "mae": 0.33736875988157167,
+      "median_absolute_error": 0.277088730663738
+    },
+    "Other Kharif pulses": {
+      "support": 75,
+      "mae": 0.12009242657902261,
+      "median_absolute_error": 0.07725865790490127
+    },
+    "Other Summer Pulses": {
+      "support": 5,
+      "mae": 0.659804644466053,
+      "median_absolute_error": 0.6782983220101342
+    },
+    "Peas & beans (Pulses)": {
+      "support": 88,
+      "mae": 0.28177044852445143,
+      "median_absolute_error": 0.13767526553302512
+    },
+    "Potato": {
+      "support": 109,
+      "mae": 1.7994240980597433,
+      "median_absolute_error": 0.9130467970570351
+    },
+    "Ragi": {
+      "support": 98,
+      "mae": 0.16316364297064276,
+      "median_absolute_error": 0.11970490958061963
+    },
+    "Rapeseed &Mustard": {
+      "support": 111,
+      "mae": 0.21212919578778935,
+      "median_absolute_error": 0.08130033809858805
+    },
+    "Rice": {
+      "support": 236,
+      "mae": 0.2562568581870783,
+      "median_absolute_error": 0.13420975221678666
+    },
+    "Safflower": {
+      "support": 39,
+      "mae": 0.1253668730887573,
+      "median_absolute_error": 0.0824760735821305
+    },
+    "Sannhamp": {
+      "support": 17,
+      "mae": 0.6394470934965577,
+      "median_absolute_error": 0.3323675406757341
+    },
+    "Sesamum": {
+      "support": 150,
+      "mae": 0.0809232137911046,
+      "median_absolute_error": 0.05463988109915463
+    },
+    "Small millets": {
+      "support": 97,
+      "mae": 0.10740706989977529,
+      "median_absolute_error": 0.07403299528922602
+    },
+    "Soyabean": {
+      "support": 63,
+      "mae": 0.1597534457041313,
+      "median_absolute_error": 0.09569385157910681
+    },
+    "Sugarcane": {
+      "support": 112,
+      "mae": 8.356978532127362,
+      "median_absolute_error": 4.645754636513946
+    },
+    "Sunflower": {
+      "support": 80,
+      "mae": 0.16592969914580968,
+      "median_absolute_error": 0.09470067855234063
+    },
+    "Sweet potato": {
+      "support": 57,
+      "mae": 1.510543337035867,
+      "median_absolute_error": 0.6033992050417432
+    },
+    "Tapioca": {
+      "support": 34,
+      "mae": 2.465361913154484,
+      "median_absolute_error": 1.289469174745209
+    },
+    "Tobacco": {
+      "support": 67,
+      "mae": 1.2967013883213088,
+      "median_absolute_error": 0.14171510375550944
+    },
+    "Turmeric": {
+      "support": 61,
+      "mae": 0.4693311311269672,
+      "median_absolute_error": 0.2058498524777561
+    },
+    "Urad": {
+      "support": 161,
+      "mae": 0.10525925913433938,
+      "median_absolute_error": 0.06276972063524389
+    },
+    "Wheat": {
+      "support": 103,
+      "mae": 0.3050784286660761,
+      "median_absolute_error": 0.1985583078772475
+    },
+    "other oilseeds": {
+      "support": 27,
+      "mae": 0.5360409944848464,
+      "median_absolute_error": 0.17236767340577802
+    }
+  }
+}

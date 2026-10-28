@@ -18,6 +18,7 @@ FEATURES = [
     "Fertilizer",
     "Pesticide",
 ]
+CATEGORICAL_FEATURES = ["Crop", "Season", "State"]
 
 
 def main():
@@ -58,6 +59,10 @@ def main():
     for column in numeric_columns:
         df[column] = pd.to_numeric(df[column], errors="coerce")
 
+    for column in CATEGORICAL_FEATURES:
+        df[column] = df[column].astype("string").str.strip()
+        df[column] = df[column].replace("", pd.NA)
+
     df = df.dropna(subset=FEATURES + [TARGET]).copy()
 
     # Reject infinite numeric values.
@@ -70,12 +75,24 @@ def main():
         ).all(axis=1)
     ].copy()
 
-    # Yield must be non-negative; investigate unusual values separately.
+    df = df[
+        (df["Area"] > 0)
+        & (df["Production"] >= 0)
+        & (df["Annual_Rainfall"] >= 0)
+        & (df["Fertilizer"] >= 0)
+        & (df["Pesticide"] >= 0)
+    ].copy()
+
+    # Keep high values for review because crop yield units can vary.
     df = df[df[TARGET] >= 0].copy()
+    df = df.drop_duplicates(subset=FEATURES + [TARGET])
 
     print("Rows after basic validation:", len(df))
     print("\nYield summary:")
     print(df[TARGET].describe())
+
+    print("\nYield maximum by crop:")
+    print(df.groupby("Crop")[TARGET].max().sort_values(ascending=False).head(10))
 
     print("\nLargest 10 yield values:")
     print(df.nlargest(10, TARGET)[

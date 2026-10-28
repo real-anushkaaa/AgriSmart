@@ -11,7 +11,7 @@ client = TestClient(app)
 
 def test_yield_prediction_success():
     with patch(
-        "app.api.routes.predict_crop_yield",
+        "app.api.endpoints.predictions.predict_crop_yield",
         return_value=2.6655,
     ):
         response = client.post(
@@ -54,3 +54,27 @@ def test_yield_prediction_rejects_invalid_area():
     )
 
     assert response.status_code == 422
+
+
+def test_yield_prediction_maps_unavailable_model_to_503():
+    from app.ml.errors import ModelUnavailableError
+
+    with patch(
+        "app.api.endpoints.predictions.predict_crop_yield",
+        side_effect=ModelUnavailableError("corrupt model"),
+    ):
+        response = client.post(
+            "/api/v1/yield/predict",
+            json={
+                "crop": "Rice",
+                "crop_year": 2019,
+                "season": "Kharif",
+                "state": "Assam",
+                "area": 5000,
+                "annual_rainfall": 2000,
+                "fertilizer": 500000,
+                "pesticide": 1500,
+            },
+        )
+
+    assert response.status_code == 503

@@ -1,7 +1,9 @@
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routes import router
+from app.api.upload_limit import ImageUploadLimitMiddleware
 from app.core.config import settings
 
 app = FastAPI(
@@ -12,6 +14,17 @@ app = FastAPI(
     ),
     version="1.0.0",
 )
+
+app.add_middleware(ImageUploadLimitMiddleware)
+
+if settings.cors_origin_list:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.cors_origin_list,
+        allow_credentials=False,
+        allow_methods=["GET", "POST"],
+        allow_headers=["Content-Type", "X-API-Key"],
+    )
 
 app.include_router(router)
 

@@ -4,13 +4,14 @@ from unittest.mock import patch
 from fastapi.testclient import TestClient
 
 from app.main import app
+from app.services.errors import GeminiServiceError
 
 client = TestClient(app)
 
 
 def test_crop_calendar_generation_success():
     with patch(
-        "app.api.routes.generate_crop_calendar",
+        "app.api.endpoints.gemini.generate_crop_calendar",
         return_value="Land preparation: May. Sowing: June.",
     ):
         response = client.post(
@@ -47,8 +48,8 @@ def test_crop_calendar_rejects_invalid_month():
 
 def test_crop_calendar_handles_gemini_failure():
     with patch(
-        "app.api.routes.generate_crop_calendar",
-        side_effect=RuntimeError("Gemini unavailable"),
+        "app.api.endpoints.gemini.generate_crop_calendar",
+        side_effect=GeminiServiceError("Gemini unavailable"),
     ):
         response = client.post(
             "/api/v1/crop-calendar/generate",

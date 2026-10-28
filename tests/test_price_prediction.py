@@ -4,6 +4,7 @@ from unittest.mock import patch
 from fastapi.testclient import TestClient
 
 from app.main import app
+from app.services.errors import GeminiServiceError
 
 
 client = TestClient(app)
@@ -11,7 +12,7 @@ client = TestClient(app)
 
 def test_price_prediction_success():
     with patch(
-        "app.api.routes.predict_crop_price",
+        "app.api.endpoints.gemini.predict_crop_price",
         return_value=(
             "Price information\n"
             "AI-generated guidance only; live price not verified."
@@ -52,10 +53,24 @@ def test_price_prediction_rejects_invalid_date_format():
     assert response.status_code == 422
 
 
+def test_price_prediction_rejects_impossible_calendar_date():
+    response = client.post(
+        "/api/v1/prices/predict",
+        json={
+            "crop": "Wheat",
+            "state": "Madhya Pradesh",
+            "market": "Indore",
+            "date": "2026-13-45",
+        },
+    )
+
+    assert response.status_code == 422
+
+
 def test_price_prediction_handles_gemini_failure():
     with patch(
-        "app.api.routes.predict_crop_price",
-        side_effect=RuntimeError("Simulated Gemini failure"),
+        "app.api.endpoints.gemini.predict_crop_price",
+        side_effect=GeminiServiceError("Simulated Gemini failure"),
     ):
         response = client.post(
             "/api/v1/prices/predict",

@@ -1,5 +1,6 @@
 from pathlib import Path
 import json
+import tempfile
 
 import numpy as np
 import tensorflow as tf
@@ -66,6 +67,12 @@ def main():
     image_paths = np.array(image_paths)
     labels = np.array(labels)
 
+    class_counts = np.bincount(labels, minlength=len(class_names))
+    if not len(labels) or class_counts.min() < 4:
+        raise ValueError(
+            "Each class needs at least four images for stratified train/validation/test splits."
+        )
+
     # 70% training, 15% validation, 15% test.
     train_paths, remaining_paths, train_labels, remaining_labels = (
         train_test_split(
@@ -130,27 +137,29 @@ def main():
     )
 
     ARTIFACTS_DIR.mkdir(parents=True, exist_ok=True)
-    callbacks = [
-        tf.keras.callbacks.EarlyStopping(
-            monitor="val_loss", patience=4, restore_best_weights=True
-        ),
-        tf.keras.callbacks.ModelCheckpoint(
-            str(ARTIFACTS_DIR / "soybean_disease_best.keras"),
-            monitor="val_loss", save_best_only=True,
-        ),
-    ]
+    with tempfile.TemporaryDirectory(
+        prefix="soybean-checkpoint-",
+        dir=ARTIFACTS_DIR,
+    ) as checkpoint_dir:
+        checkpoint_path = Path(checkpoint_dir) / "best.keras"
+        callbacks = [
+            tf.keras.callbacks.EarlyStopping(
+                monitor="val_loss", patience=4, restore_best_weights=True
+            ),
+            tf.keras.callbacks.ModelCheckpoint(
+                str(checkpoint_path),
+                monitor="val_loss", save_best_only=True,
+            ),
+        ]
 
-    model.fit(
-        train_ds,
-        validation_data=val_ds,
-        epochs=EPOCHS,
-        class_weight=class_weights,
-        callbacks=callbacks,
-    )
-
-    best_model = tf.keras.models.load_model(
-        ARTIFACTS_DIR / "soybean_disease_best.keras"
-    )
+        model.fit(
+            train_ds,
+            validation_data=val_ds,
+            epochs=EPOCHS,
+            class_weight=class_weights,
+            callbacks=callbacks,
+        )
+        best_model = tf.keras.models.load_model(checkpoint_path)
     probabilities = best_model.predict(test_ds)
     predictions = np.argmax(probabilities, axis=1)
 
@@ -186,6 +195,7 @@ def main():
         "validation_images": len(val_paths),
         "test_images": len(test_paths),
         "random_seed": RANDOM_SEED,
+        "evaluation_note": "Single stratified holdout with 15 test images per class; treat as preliminary.",
     }
     with open(ARTIFACTS_DIR / "soybean_disease_metrics.json", "w") as f:
         json.dump(metrics, f, indent=2)

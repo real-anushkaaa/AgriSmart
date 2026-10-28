@@ -1,16 +1,18 @@
 
+import json
 from pathlib import Path
 
 import joblib
 import numpy as np
 import pandas as pd
 
-from sklearn.compose import ColumnTransformer
+from sklearn.compose import ColumnTransformer, TransformedTargetRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.impute import SimpleImputer
 from sklearn.metrics import (
     mean_absolute_error,
     mean_squared_error,
+    median_absolute_error,
     r2_score,
 )
 from sklearn.pipeline import Pipeline
@@ -51,6 +53,10 @@ def main():
     train_df = pd.read_csv(train_path)
     test_df = pd.read_csv(test_path)
 
+    for frame in (train_df, test_df):
+        for column in CATEGORICAL_FEATURES:
+            frame[column] = frame[column].astype("string").str.strip()
+
     X_train = train_df[FEATURES]
     y_train = train_df[TARGET]
 
@@ -80,7 +86,7 @@ def main():
         ]
     )
 
-    model = Pipeline(
+    regressor = Pipeline(
         steps=[
             ("preprocessor", preprocessor),
             (
@@ -94,6 +100,12 @@ def main():
             ),
         ]
     )
+    # Log scaling limits the influence of very large crop-specific values.
+    model = TransformedTargetRegressor(
+        regressor=regressor,
+        func=np.log1p,
+        inverse_func=np.expm1,
+    )
 
     print("Training Random Forest model...")
     model.fit(X_train, y_train)
@@ -101,6 +113,7 @@ def main():
     predictions = model.predict(X_test)
 
     mae = mean_absolute_error(y_test, predictions)
+    median_ae = median_absolute_error(y_test, predictions)
     mse = mean_squared_error(y_test, predictions)
     rmse = np.sqrt(mse)
     r2 = r2_score(y_test, predictions)
@@ -108,6 +121,7 @@ def main():
     print("\nModel evaluation results")
     print("------------------------")
     print(f"MAE:  {mae:.4f}")
+    print(f"Median AE: {median_ae:.4f}")
     print(f"MSE:  {mse:.4f}")
     print(f"RMSE: {rmse:.4f}")
     print(f"R2:   {r2:.4f}")
@@ -123,11 +137,38 @@ def main():
         index=False,
     )
 
+    per_crop_metrics = {}
+    for crop_name, group in results.groupby("Crop"):
+        per_crop_metrics[str(crop_name)] = {
+            "support": int(len(group)),
+            "mae": float(
+                mean_absolute_error(group[TARGET], group["Predicted_Yield"])
+            ),
+            "median_absolute_error": float(
+                median_absolute_error(group[TARGET], group["Predicted_Yield"])
+            ),
+        }
+    metrics_path = ARTIFACT_DIR / "yield_metrics.json"
+    metrics_path.write_text(
+        json.dumps(
+            {
+                "mae": float(mae),
+                "median_absolute_error": float(median_ae),
+                "rmse": float(rmse),
+                "r2": float(r2),
+                "per_crop": per_crop_metrics,
+            },
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+
     print(f"\nSaved trained model to: {model_path}")
     print(
         "Saved test predictions to: "
         "artifacts/yield_test_predictions.csv"
     )
+    print(f"Saved per-crop evaluation metrics to: {metrics_path}")
 
 
 if __name__ == "__main__":

@@ -1,8 +1,10 @@
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class YieldPredictionRequest(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+
     crop: str = Field(min_length=1, max_length=100)
     crop_year: int = Field(ge=1990, le=2100)
     season: str = Field(min_length=1, max_length=100)
