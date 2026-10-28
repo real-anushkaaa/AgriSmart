@@ -52,8 +52,8 @@ python -m pip install -r requirements-dev.txt
 python -m pytest -v
 ```
 
-The tests mock database and external API calls; model inference tests use small
-stubs and do not need a Gemini key or trained TensorFlow models.
+API tests use in-memory SQLite, and Gemini and model inference calls use stubs.
+The suite needs no MySQL server, Gemini key, or trained TensorFlow models.
 
 ## Retraining
 
