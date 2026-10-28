@@ -1,22 +1,5 @@
-from app.services.chatbot_service import get_agriculture_answer
-from app.schemas.chatbot import ChatbotRequest, ChatbotResponse
-from app.services.crop_calendar_service import generate_crop_calendar
-from app.schemas.crop_calendar import (
-    CropCalendarRequest,
-    CropCalendarResponse,
-)
-from app.ml.soybean_disease_predictor import predict_soybean_disease
-from app.schemas.soybean_disease import SoybeanDiseasePredictionResponse
-from fastapi import File, UploadFile
-from app.ml.tomato_disease_predictor import predict_tomato_disease
-from app.schemas.tomato_disease import TomatoDiseasePredictionResponse
-from app.services.price_prediction_service import predict_crop_price
-from app.schemas.price_prediction import (
-    PricePredictionRequest,
-    PricePredictionResponse,
-)
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
@@ -24,15 +7,29 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.db.database import get_db
 from app.models import CropRecord
-from app.schemas.crop_record import (
-    CropRecordCreate,
-    CropRecordResponse,
-)
-from app.ml.yield_predictor import predict_crop_yield
+
+from app.schemas.crop_record import CropRecordCreate, CropRecordResponse
 from app.schemas.yield_prediction import (
     YieldPredictionRequest,
     YieldPredictionResponse,
 )
+from app.schemas.price_prediction import (
+    PricePredictionRequest,
+    PricePredictionResponse,
+)
+from app.schemas.tomato_disease import TomatoDiseasePredictionResponse
+from app.schemas.soybean_disease import SoybeanDiseasePredictionResponse
+from app.schemas.crop_calendar import CropCalendarRequest, CropCalendarResponse
+from app.schemas.chatbot import ChatbotRequest, ChatbotResponse
+
+from app.ml.yield_predictor import predict_crop_yield
+from app.ml.tomato_disease_predictor import predict_tomato_disease
+from app.ml.soybean_disease_predictor import predict_soybean_disease
+
+from app.services.price_prediction_service import predict_crop_price
+from app.services.crop_calendar_service import generate_crop_calendar
+from app.services.chatbot_service import get_agriculture_answer
+
 
 router = APIRouter()
 
@@ -73,11 +70,11 @@ def database_health(db: Session = Depends(get_db)):
     try:
         db.execute(text("SELECT 1"))
         return {"database": "connected"}
-    except SQLAlchemyError:
+    except SQLAlchemyError as exc:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Database is unavailable",
-        )
+        ) from exc
 
 
 @router.post(
@@ -96,12 +93,12 @@ def create_crop_record(
         db.commit()
         db.refresh(record)
         return record
-    except SQLAlchemyError:
+    except SQLAlchemyError as exc:
         db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Could not save crop record",
-        )
+        ) from exc
 
 
 @router.get(
@@ -119,6 +116,7 @@ def list_crop_records(db: Session = Depends(get_db)):
 @router.post(
     "/api/v1/yield/predict",
     response_model=YieldPredictionResponse,
+    tags=["Crop Yield Prediction"],
 )
 def predict_yield(payload: YieldPredictionRequest):
     try:
@@ -132,7 +130,6 @@ def predict_yield(payload: YieldPredictionRequest):
             fertilizer=payload.fertilizer,
             pesticide=payload.pesticide,
         )
-
         return YieldPredictionResponse(
             crop=payload.crop,
             state=payload.state,
@@ -140,17 +137,17 @@ def predict_yield(payload: YieldPredictionRequest):
             predicted_yield=round(predicted_yield, 4),
             model_type="RandomForestRegressor",
         )
-
-    except FileNotFoundError:
+    except FileNotFoundError as exc:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Crop yield prediction model is unavailable",
-        )
+        ) from exc
 
 
 @router.post(
     "/api/v1/prices/predict",
     response_model=PricePredictionResponse,
+    tags=["Crop Price Guidance"],
 )
 def predict_price(payload: PricePredictionRequest):
     try:
@@ -160,7 +157,6 @@ def predict_price(payload: PricePredictionRequest):
             market=payload.market,
             date=payload.date,
         )
-
         return PricePredictionResponse(
             crop=payload.crop,
             state=payload.state,
@@ -168,12 +164,11 @@ def predict_price(payload: PricePredictionRequest):
             date=payload.date,
             price_guidance=guidance,
         )
-
-    except Exception:
+    except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail="Crop price guidance service is temporarily unavailable.",
-        )
+        ) from exc
 
 
 @router.post(
@@ -191,7 +186,6 @@ async def predict_tomato_disease_endpoint(
         )
 
     image_bytes = await file.read()
-
     if not image_bytes:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -201,18 +195,16 @@ async def predict_tomato_disease_endpoint(
     try:
         result = predict_tomato_disease(image_bytes)
         return TomatoDiseasePredictionResponse(**result)
-
     except ValueError as exc:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(exc),
         ) from exc
-
-    except (FileNotFoundError, RuntimeError):
+    except (FileNotFoundError, RuntimeError) as exc:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Tomato disease model is unavailable.",
-        )
+        ) from exc
 
 
 @router.post(
@@ -230,7 +222,6 @@ async def predict_soybean_disease_endpoint(
         )
 
     image_bytes = await file.read()
-
     if not image_bytes:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -240,18 +231,16 @@ async def predict_soybean_disease_endpoint(
     try:
         result = predict_soybean_disease(image_bytes)
         return SoybeanDiseasePredictionResponse(**result)
-
     except ValueError as exc:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(exc),
         ) from exc
-
-    except (FileNotFoundError, RuntimeError):
+    except (FileNotFoundError, RuntimeError) as exc:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Soybean disease model is unavailable.",
-        )
+        ) from exc
 
 
 @router.post(
@@ -267,19 +256,17 @@ def create_crop_calendar(payload: CropCalendarRequest):
             season=payload.season,
             start_month=payload.start_month,
         )
-
         return CropCalendarResponse(
             crop=payload.crop,
             location=payload.location,
             season=payload.season,
             calendar=calendar_text,
         )
-
-    except Exception:
+    except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail="Crop calendar service is temporarily unavailable.",
-        )
+        ) from exc
 
 
 @router.post(
@@ -290,14 +277,12 @@ def create_crop_calendar(payload: CropCalendarRequest):
 def ask_agriculture_chatbot(payload: ChatbotRequest):
     try:
         answer = get_agriculture_answer(payload.question)
-
         return ChatbotResponse(
             question=payload.question,
             answer=answer,
         )
-
-    except Exception:
+    except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail="Agriculture chatbot service is temporarily unavailable.",
-        )
+        ) from exc
