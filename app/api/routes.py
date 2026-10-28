@@ -1,3 +1,8 @@
+from app.services.crop_calendar_service import generate_crop_calendar
+from app.schemas.crop_calendar import (
+    CropCalendarRequest,
+    CropCalendarResponse,
+)
 from app.ml.soybean_disease_predictor import predict_soybean_disease
 from app.schemas.soybean_disease import SoybeanDiseasePredictionResponse
 from fastapi import File, UploadFile
@@ -246,3 +251,30 @@ async def predict_soybean_disease_endpoint(
             detail="Soybean disease model is unavailable.",
         )
 
+
+@router.post(
+    "/api/v1/crop-calendar/generate",
+    response_model=CropCalendarResponse,
+    tags=["Crop Calendar"],
+)
+def create_crop_calendar(payload: CropCalendarRequest):
+    try:
+        calendar_text = generate_crop_calendar(
+            crop=payload.crop,
+            location=payload.location,
+            season=payload.season,
+            start_month=payload.start_month,
+        )
+
+        return CropCalendarResponse(
+            crop=payload.crop,
+            location=payload.location,
+            season=payload.season,
+            calendar=calendar_text,
+        )
+
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Crop calendar service is temporarily unavailable.",
+        )
