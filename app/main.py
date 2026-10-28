@@ -3,7 +3,10 @@ from fastapi import FastAPI
 
 app = FastAPI(
     title="AgriSmart API",
-    description="AI-powered agriculture assistant",
+    description=(
+        "An AI-powered agriculture assistant "
+        "for crop predictions and farming guidance."
+    ),
     version="1.0.0",
 )
 
