@@ -1,3 +1,5 @@
+from app.services.chatbot_service import get_agriculture_answer
+from app.schemas.chatbot import ChatbotRequest, ChatbotResponse
 from app.services.crop_calendar_service import generate_crop_calendar
 from app.schemas.crop_calendar import (
     CropCalendarRequest,
@@ -277,4 +279,25 @@ def create_crop_calendar(payload: CropCalendarRequest):
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail="Crop calendar service is temporarily unavailable.",
+        )
+
+
+@router.post(
+    "/api/v1/chatbot/ask",
+    response_model=ChatbotResponse,
+    tags=["AI Agriculture Chatbot"],
+)
+def ask_agriculture_chatbot(payload: ChatbotRequest):
+    try:
+        answer = get_agriculture_answer(payload.question)
+
+        return ChatbotResponse(
+            question=payload.question,
+            answer=answer,
+        )
+
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Agriculture chatbot service is temporarily unavailable.",
         )
