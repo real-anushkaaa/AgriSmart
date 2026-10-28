@@ -11,6 +11,11 @@ from app.schemas.crop_record import (
     CropRecordCreate,
     CropRecordResponse,
 )
+from app.ml.yield_predictor import predict_crop_yield
+from app.schemas.yield_prediction import (
+    YieldPredictionRequest,
+    YieldPredictionResponse,
+)
 
 router = APIRouter()
 
@@ -92,3 +97,36 @@ def list_crop_records(db: Session = Depends(get_db)):
         .order_by(CropRecord.id.desc())
         .all()
     )
+
+
+@router.post(
+    "/api/v1/yield/predict",
+    response_model=YieldPredictionResponse,
+)
+def predict_yield(payload: YieldPredictionRequest):
+    try:
+        predicted_yield = predict_crop_yield(
+            crop=payload.crop,
+            crop_year=payload.crop_year,
+            season=payload.season,
+            state=payload.state,
+            area=payload.area,
+            annual_rainfall=payload.annual_rainfall,
+            fertilizer=payload.fertilizer,
+            pesticide=payload.pesticide,
+        )
+
+        return YieldPredictionResponse(
+            crop=payload.crop,
+            state=payload.state,
+            crop_year=payload.crop_year,
+            predicted_yield=round(predicted_yield, 4),
+            model_type="RandomForestRegressor",
+        )
+
+    except FileNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Crop yield prediction model is unavailable",
+        )
+

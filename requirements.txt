@@ -10,3 +10,8 @@ google-genai
 httpx
 pytest
 alembic
+pandas
+numpy
+scikit-learn
+joblib
+matplotlib
