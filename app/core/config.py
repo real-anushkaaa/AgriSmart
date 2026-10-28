@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     api_v1_prefix: str = "/api/v1"
 
     # MySQL database settings
+    database_url: str | None = None
     db_host: str = "localhost"
     db_port: int = 3306
     db_name: str = "agrismart_db"

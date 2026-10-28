@@ -31,13 +31,11 @@ Create and activate a virtual environment, then install dependencies:
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env
+test -f .env || cp .env.example .env
 ```
 
-Set `DB_PASSWORD` and `GEMINI_API_KEY` in `.env` for the services you plan
-to use. The application reads the database settings as `DB_HOST`,
-`DB_PORT`, `DB_NAME`, `DB_USER`, and `DB_PASSWORD`. Create the MySQL database
-and user first, then initialize its tables:
+Set `DATABASE_URL` and `GEMINI_API_KEY` in `.env`. Create the MySQL database
+and user first, then initialize the tables:
 
 ```bash
 python -m app.db.init_db
@@ -53,14 +51,11 @@ python -m uvicorn app.main:app --reload
 
 Visit http://127.0.0.1:8000/docs
 
-## Machine Learning Models
+## Datasets and Models
 
-Training data and generated model files are kept out of Git. Place the crop
-yield CSV in `data/raw/`, and place tomato and soybean images under
-`data/raw/tomato_disease/` and `data/raw/soybean_disease/`, with one folder
-per class. Run the corresponding scripts in `scripts/` to create the model
-files in `artifacts/`. Prediction endpoints return an unavailable response
-until their model files have been generated.
+The training datasets and generated models are included through Git LFS. After
+cloning, install Git LFS and download the assets with `git lfs pull`. They are
+also available locally in `data/` and `artifacts/`.
 
 ## Run Tests
 
@@ -70,7 +65,6 @@ python -m pytest -v
 
 ## Project Status
 
-The FastAPI backend, database layer, model training scripts, prediction
-endpoints, and Gemini-powered guidance endpoints are implemented. Configure
-the required services and generate the local model artifacts before using
-those features.
+The FastAPI backend, database layer, training scripts, prediction endpoints,
+and Gemini-powered guidance endpoints are implemented. Dataset and model
+assets are included for local use.

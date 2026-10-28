@@ -6,7 +6,7 @@ from sqlalchemy.orm import DeclarativeBase, sessionmaker
 from app.core.config import settings
 
 
-database_url = URL.create(
+database_url = settings.database_url or URL.create(
     drivername="mysql+pymysql",
     username=settings.db_user,
     password=settings.db_password,
