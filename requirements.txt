@@ -16,3 +16,5 @@ scikit-learn
 joblib
 matplotlib
 google-genai
+tensorflow
+Pillow

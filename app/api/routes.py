@@ -1,3 +1,6 @@
+from fastapi import File, UploadFile
+from app.ml.tomato_disease_predictor import predict_tomato_disease
+from app.schemas.tomato_disease import TomatoDiseasePredictionResponse
 from app.services.price_prediction_service import predict_crop_price
 from app.schemas.price_prediction import (
     PricePredictionRequest,
@@ -161,5 +164,44 @@ def predict_price(payload: PricePredictionRequest):
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail="Crop price guidance service is temporarily unavailable.",
+        )
+
+
+@router.post(
+    "/api/v1/diseases/tomato/predict",
+    response_model=TomatoDiseasePredictionResponse,
+    tags=["Tomato Disease Detection"],
+)
+async def predict_tomato_disease_endpoint(
+    file: UploadFile = File(...),
+):
+    if not file.content_type or not file.content_type.startswith("image/"):
+        raise HTTPException(
+            status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            detail="Please upload an image file.",
+        )
+
+    image_bytes = await file.read()
+
+    if not image_bytes:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Uploaded image is empty.",
+        )
+
+    try:
+        result = predict_tomato_disease(image_bytes)
+        return TomatoDiseasePredictionResponse(**result)
+
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        ) from exc
+
+    except (FileNotFoundError, RuntimeError):
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Tomato disease model is unavailable.",
         )
 
