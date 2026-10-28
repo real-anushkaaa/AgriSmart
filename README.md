@@ -31,12 +31,17 @@ Create and activate a virtual environment, then install dependencies:
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+cp .env.example .env
 ```
 
-Copy `.env.example` to `.env`, then set `DB_PASSWORD` and
-`GEMINI_API_KEY` for the services you plan to use. The application reads
-the database settings as `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, and
-`DB_PASSWORD`.
+Set `DB_PASSWORD` and `GEMINI_API_KEY` in `.env` for the services you plan
+to use. The application reads the database settings as `DB_HOST`,
+`DB_PORT`, `DB_NAME`, `DB_USER`, and `DB_PASSWORD`. Create the MySQL database
+and user first, then initialize its tables:
+
+```bash
+python -m app.db.init_db
+```
 
 Start the development server:
 
