@@ -1,3 +1,8 @@
+from app.services.price_prediction_service import predict_crop_price
+from app.schemas.price_prediction import (
+    PricePredictionRequest,
+    PricePredictionResponse,
+)
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import text
@@ -128,5 +133,33 @@ def predict_yield(payload: YieldPredictionRequest):
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Crop yield prediction model is unavailable",
+        )
+
+
+@router.post(
+    "/api/v1/prices/predict",
+    response_model=PricePredictionResponse,
+)
+def predict_price(payload: PricePredictionRequest):
+    try:
+        guidance = predict_crop_price(
+            crop=payload.crop,
+            state=payload.state,
+            market=payload.market,
+            date=payload.date,
+        )
+
+        return PricePredictionResponse(
+            crop=payload.crop,
+            state=payload.state,
+            market=payload.market,
+            date=payload.date,
+            price_guidance=guidance,
+        )
+
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Crop price guidance service is temporarily unavailable.",
         )
 
