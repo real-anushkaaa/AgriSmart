@@ -29,11 +29,12 @@ Install Docker Desktop and Git LFS, then from the repository root:
 ```bash
 git lfs install
 git lfs pull
-cp .env.example .env
+test -f .env || cp .env.example .env
 ```
 
 Edit `.env`: replace the local database passwords and add your `GEMINI_API_KEY`.
-Then build and start the API and MySQL database:
+If `.env` already exists, this command leaves it untouched. Then build and start
+the API and MySQL database:
 
 ```bash
 docker compose up --build
