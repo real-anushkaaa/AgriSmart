@@ -1,11 +1,14 @@
 # AgriSmart
 
 AgriSmart is a FastAPI agriculture assistant with yield prediction, crop disease
-classification, Gemini-powered guidance, and MySQL crop records.
+classification, Gemini-powered guidance, MySQL crop records, and a small browser
+interface for farmers.
 
 ## Project contents
 
 - `app/` contains the API, configuration, database, model, schema, and service code.
+- `app/web/` contains the browser interface served at `/ui/`.
+- `Dockerfile` and `compose.yaml` start the API and MySQL locally.
 - `scripts/` contains dataset inspection and model training commands.
 - `tests/` contains the API and service tests.
 - `data/` contains the yield and disease training datasets.
@@ -18,6 +21,30 @@ archives in **Settings → General → Archives**; archive downloads then count
 against Git LFS bandwidth.
 
 ## Run locally
+
+### Docker Compose
+
+Install Docker Desktop and Git LFS, then from the repository root:
+
+```bash
+git lfs install
+git lfs pull
+cp .env.example .env
+```
+
+Edit `.env`: replace the local database passwords and add your `GEMINI_API_KEY`.
+Then build and start the API and MySQL database:
+
+```bash
+docker compose up --build
+```
+
+Compose waits for MySQL, creates the crop-record table, and then starts the API.
+Open the farmer interface at <http://127.0.0.1:8000/ui/> or the API docs at
+<http://127.0.0.1:8000/docs>. The database data persists in a Docker volume.
+The app port is bound to localhost for local development.
+
+### Run Python directly
 
 Use Python 3.12, create a virtual environment, and install the runtime packages:
 
@@ -37,11 +64,15 @@ python -m uvicorn app.main:app --reload
 ```
 
 Open the API documentation at <http://127.0.0.1:8000/docs>.
+The farmer interface is available at <http://127.0.0.1:8000/ui/>.
 
 In production, set a strong `API_ACCESS_TOKEN`; versioned API endpoints require
 it in the `X-API-Key` header. Set `CORS_ORIGINS` to a comma-separated allowlist
 for browser clients. Image uploads default to a 10 MiB limit; configure
 `MAX_IMAGE_UPLOAD_BYTES` to change it.
+
+The sample passwords in `.env.example` are for local development only. Replace
+them before using the Docker setup beyond your own machine.
 
 ## Tests
 

@@ -1,6 +1,9 @@
 
+from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.api.routes import router
 from app.api.upload_limit import ImageUploadLimitMiddleware
@@ -27,6 +30,11 @@ if settings.cors_origin_list:
     )
 
 app.include_router(router)
+app.mount(
+    "/ui",
+    StaticFiles(directory=Path(__file__).resolve().parent / "web", html=True),
+    name="web-ui",
+)
 
 
 if __name__ == "__main__":

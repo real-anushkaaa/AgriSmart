@@ -31,3 +31,11 @@ def test_info_endpoint():
     data = response.json()
     assert data["version"] == "1.0.0"
     assert len(data["features"]) == 6
+
+
+def test_farmer_ui_is_served():
+    response = client.get("/ui/")
+
+    assert response.status_code == 200
+    assert "Crop yield estimate" in response.text
+    assert "Plant health check" in response.text

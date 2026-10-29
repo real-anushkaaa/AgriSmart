@@ -1,0 +1,72 @@
+services:
+  db:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-change_me_root}
+      MYSQL_DATABASE: ${DB_NAME:-agrismart_db}
+      MYSQL_USER: ${DB_USER:-agrismart_app}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-change_me_app}
+    volumes:
+      - agrismart-mysql:/var/lib/mysql
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - mysqladmin ping -h 127.0.0.1 -u"$${MYSQL_USER}" -p"$${MYSQL_PASSWORD}" --silent
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+
+  init-db:
+    build: .
+    restart: "no"
+    command: ["python", "-m", "app.db.init_db"]
+    environment:
+      APP_ENV: ${APP_ENV:-development}
+      DATABASE_URL: ""
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_NAME: ${DB_NAME:-agrismart_db}
+      DB_USER: ${DB_USER:-agrismart_app}
+      DB_PASSWORD: ${DB_PASSWORD:-change_me_app}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  app:
+    build: .
+    restart: unless-stopped
+    environment:
+      APP_ENV: ${APP_ENV:-development}
+      DATABASE_URL: ""
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_NAME: ${DB_NAME:-agrismart_db}
+      DB_USER: ${DB_USER:-agrismart_app}
+      DB_PASSWORD: ${DB_PASSWORD:-change_me_app}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.8-flash}
+      API_ACCESS_TOKEN: ${API_ACCESS_TOKEN:-}
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
+      MAX_IMAGE_UPLOAD_BYTES: ${MAX_IMAGE_UPLOAD_BYTES:-10485760}
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      init-db:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  agrismart-mysql:

@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="AgriSmart crop planning, yield estimates, disease checks, and farm records."
+    />
+    <title>AgriSmart | Farm tools</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #183328;
+        --muted: #637469;
+        --green: #226c45;
+        --green-dark: #174b31;
+        --green-pale: #e9f3eb;
+        --cream: #f6f5ed;
+        --line: #dce5da;
+        --white: #fff;
+        --error: #a2352d;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      * { box-sizing: border-box; }
+      body { margin: 0; color: var(--ink); background: var(--cream); }
+      a { color: var(--green-dark); }
+      .hero { padding: 26px max(22px, calc((100vw - 1180px) / 2)); color: var(--white); background: var(--green-dark); }
+      .hero-top { display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap; }
+      .brand { display: flex; align-items: center; gap: 12px; }
+      .brand-mark { display: grid; width: 42px; height: 42px; place-items: center; border-radius: 14px; background: #c8e1bd; color: var(--green-dark); font-size: 23px; }
+      .brand h1 { margin: 0; font-size: 1.35rem; letter-spacing: -0.03em; }
+      .brand p { margin: 3px 0 0; color: #d0dfd2; font-size: 0.88rem; }
+      .hero-links { display: flex; gap: 16px; flex-wrap: wrap; }
+      .hero-links a { color: #e7f0e8; font-size: 0.92rem; text-decoration: none; }
+      .hero-links a:hover { text-decoration: underline; }
+      main { max-width: 1180px; margin: 0 auto; padding: 28px 22px 60px; }
+      .intro { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 24px; margin-bottom: 23px; }
+      .intro h2 { margin: 0 0 7px; font-size: clamp(1.55rem, 3vw, 2.2rem); letter-spacing: -0.04em; }
+      .intro p { max-width: 680px; margin: 0; color: var(--muted); line-height: 1.55; }
+      .key-box { width: min(100%, 320px); }
+      .key-box label { color: #d0dfd2; }
+      .hero .key-box label { color: #d0dfd2; }
+      .key-box input { color: var(--ink); }
+      .status { min-height: 20px; margin-top: 7px; color: #d0dfd2; font-size: 0.82rem; }
+      .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 17px; }
+      .card { min-width: 0; padding: 21px; border: 1px solid var(--line); border-radius: 18px; background: var(--white); box-shadow: 0 5px 20px rgb(27 57 39 / 4%); }
+      .card.wide { grid-column: 1 / -1; }
+      .card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; margin-bottom: 16px; }
+      .card-head h3 { margin: 0; font-size: 1.08rem; }
+      .card-head p { margin: 5px 0 0; color: var(--muted); font-size: 0.88rem; line-height: 1.4; }
+      .icon { display: grid; width: 36px; height: 36px; flex: 0 0 auto; place-items: center; border-radius: 12px; background: var(--green-pale); font-size: 18px; }
+      form { display: grid; gap: 12px; }
+      .fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px; }
+      label { display: grid; gap: 6px; color: #405448; font-size: 0.82rem; font-weight: 650; }
+      input, select, textarea { width: 100%; min-height: 42px; padding: 10px 11px; border: 1px solid #cad7cc; border-radius: 10px; background: #fff; color: var(--ink); font: inherit; font-size: 0.92rem; }
+      textarea { min-height: 95px; resize: vertical; }
+      input:focus, select:focus, textarea:focus { outline: 3px solid rgb(50 137 80 / 18%); border-color: var(--green); }
+      button { min-height: 42px; padding: 10px 15px; border: 0; border-radius: 10px; color: #fff; background: var(--green); font: inherit; font-weight: 700; cursor: pointer; }
+      button:hover { background: var(--green-dark); }
+      button:disabled { opacity: 0.5; cursor: not-allowed; }
+      button.secondary { border: 1px solid var(--line); color: var(--green-dark); background: #fff; }
+      button.secondary:hover { background: var(--green-pale); }
+      .actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+      .result { display: none; margin-top: 14px; padding: 12px; border-radius: 11px; background: #f2f7f2; color: var(--ink); font-size: 0.9rem; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+      .result.visible { display: block; }
+      .result.error { color: var(--error); background: #fff1ef; }
+      .table-wrap { overflow-x: auto; }
+      table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+      th, td { padding: 11px 9px; border-bottom: 1px solid var(--line); text-align: left; }
+      th { color: var(--muted); font-size: 0.77rem; text-transform: uppercase; letter-spacing: 0.06em; }
+      .pager { display: flex; justify-content: space-between; align-items: center; gap: 14px; margin-top: 13px; }
+      .pager span { color: var(--muted); font-size: 0.86rem; }
+      .footnote { margin-top: 22px; color: var(--muted); font-size: 0.82rem; line-height: 1.5; }
+      .loading { opacity: 0.7; }
+
+      @media (max-width: 760px) {
+        .intro { grid-template-columns: 1fr; }
+        .key-box { width: 100%; }
+        .grid { grid-template-columns: 1fr; }
+        .card.wide { grid-column: auto; }
+      }
+      @media (max-width: 480px) {
+        main { padding-right: 14px; padding-left: 14px; }
+        .hero { padding-right: 14px; padding-left: 14px; }
+        .fields { grid-template-columns: 1fr; }
+        .card { padding: 16px; }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="hero">
+      <div class="hero-top">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">🌱</div>
+          <div>
+            <h1>AgriSmart</h1>
+            <p>Practical tools for your farm</p>
+          </div>
+        </div>
+        <nav class="hero-links" aria-label="Main navigation">
+          <a href="#yield">Yield</a>
+          <a href="#disease">Plant health</a>
+          <a href="#guidance">Guidance</a>
+          <a href="#records">Farm records</a>
+          <a href="/docs" target="_blank" rel="noreferrer">API docs</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="intro" aria-labelledby="welcome-title">
+        <div>
+          <h2 id="welcome-title">Your farm, at a glance</h2>
+          <p>Estimate crop yield, check a leaf image, plan a growing season, and keep simple crop records. AI guidance is informational and should be checked with local agricultural experts.</p>
+        </div>
+        <div class="key-box">
+          <label for="api-key">API access key <span>(only needed when configured)</span></label>
+          <input id="api-key" type="password" autocomplete="off" placeholder="Enter X-API-Key if your server requires it" />
+          <div class="status" id="api-status" role="status">Checking API…</div>
+        </div>
+      </section>
+
+      <div class="grid">
+        <section class="card" id="yield">
+          <div class="card-head">
+            <div><h3>Crop yield estimate</h3><p>Enter the farm and season details.</p></div>
+            <span class="icon" aria-hidden="true">🌾</span>
+          </div>
+          <form id="yield-form">
+            <div class="fields">
+              <label>Crop<input name="crop" required maxlength="100" value="Rice" /></label>
+              <label>Year<input name="crop_year" type="number" min="1990" max="2100" required value="2025" /></label>
+              <label>Season<input name="season" required value="Kharif" /></label>
+              <label>State<input name="state" required value="Assam" /></label>
+              <label>Area<input name="area" type="number" min="0.0001" step="any" required value="5000" /></label>
+              <label>Annual rainfall<input name="annual_rainfall" type="number" min="0" step="any" required value="2000" /></label>
+              <label>Fertilizer<input name="fertilizer" type="number" min="0" step="any" required value="500000" /></label>
+              <label>Pesticide<input name="pesticide" type="number" min="0" step="any" required value="1500" /></label>
+            </div>
+            <button type="submit">Estimate yield</button>
+          </form>
+          <div class="result" id="yield-result" aria-live="polite"></div>
+        </section>
+
+        <section class="card" id="disease">
+          <div class="card-head">
+            <div><h3>Plant health check</h3><p>Upload a clear tomato or soybean leaf photo.</p></div>
+            <span class="icon" aria-hidden="true">🍃</span>
+          </div>
+          <form id="disease-form">
+            <div class="fields">
+              <label>Plant type<select name="plant"><option value="tomato">Tomato</option><option value="soybean">Soybean</option></select></label>
+              <label>Leaf image<input name="file" type="file" accept="image/*" required /></label>
+            </div>
+            <button type="submit">Check image</button>
+          </form>
+          <div class="result" id="disease-result" aria-live="polite"></div>
+        </section>
+
+        <section class="card" id="guidance">
+          <div class="card-head">
+            <div><h3>Crop price guidance</h3><p>AI guidance only; this is not a live mandi quote.</p></div>
+            <span class="icon" aria-hidden="true">🧺</span>
+          </div>
+          <form id="price-form">
+            <div class="fields">
+              <label>Crop<input name="crop" required value="Wheat" /></label>
+              <label>State<input name="state" required value="Madhya Pradesh" /></label>
+              <label>Market<input name="market" required value="Indore" /></label>
+              <label>Date<input name="date" type="date" required /></label>
+            </div>
+            <button type="submit">Get price guidance</button>
+          </form>
+          <div class="result" id="price-result" aria-live="polite"></div>
+        </section>
+
+        <section class="card">
+          <div class="card-head">
+            <div><h3>Season calendar</h3><p>Generate a general crop activity plan.</p></div>
+            <span class="icon" aria-hidden="true">🗓️</span>
+          </div>
+          <form id="calendar-form">
+            <div class="fields">
+              <label>Crop<input name="crop" required value="Soybean" /></label>
+              <label>Location<input name="location" required value="Indore, Madhya Pradesh" /></label>
+              <label>Season<input name="season" required value="Kharif" /></label>
+              <label>Starting month<select name="start_month" required>
+                <option value="1">January</option><option value="2">February</option><option value="3">March</option><option value="4">April</option><option value="5">May</option><option value="6" selected>June</option><option value="7">July</option><option value="8">August</option><option value="9">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option>
+              </select></label>
+            </div>
+            <button type="submit">Create calendar</button>
+          </form>
+          <div class="result" id="calendar-result" aria-live="polite"></div>
+        </section>
+
+        <section class="card">
+          <div class="card-head">
+            <div><h3>Ask AgriSmart</h3><p>Ask a practical agriculture question.</p></div>
+            <span class="icon" aria-hidden="true">💬</span>
+          </div>
+          <form id="chat-form">
+            <label>Your question<textarea name="question" minlength="3" maxlength="2000" required placeholder="For example: How can I reduce weeds in a soybean field?"></textarea></label>
+            <button type="submit">Ask question</button>
+          </form>
+          <div class="result" id="chat-result" aria-live="polite"></div>
+        </section>
+
+        <section class="card">
+          <div class="card-head">
+            <div><h3>Database connection</h3><p>Check whether the crop-record database is reachable.</p></div>
+            <span class="icon" aria-hidden="true">🗄️</span>
+          </div>
+          <button id="db-check" type="button" class="secondary">Check database</button>
+          <div class="result" id="db-result" aria-live="polite"></div>
+        </section>
+
+        <section class="card wide" id="records">
+          <div class="card-head">
+            <div><h3>Farm crop records</h3><p>Save and browse a simple record of crop, location, and area.</p></div>
+            <span class="icon" aria-hidden="true">📋</span>
+          </div>
+          <form id="record-form">
+            <div class="fields">
+              <label>Crop<input name="crop_name" required maxlength="100" placeholder="e.g. Rice" /></label>
+              <label>Location<input name="location" required maxlength="150" placeholder="Village or district" /></label>
+              <label>Area in hectares<input name="area_hectares" type="number" min="0.0001" step="any" required /></label>
+            </div>
+            <button type="submit">Save crop record</button>
+          </form>
+          <div class="result" id="record-result" aria-live="polite"></div>
+          <div class="actions" style="margin-top:16px">
+            <button id="load-records" type="button" class="secondary">Refresh records</button>
+          </div>
+          <div class="result" id="records-result" aria-live="polite"></div>
+          <div class="table-wrap">
+            <table aria-label="Saved crop records">
+              <thead><tr><th>Crop</th><th>Location</th><th>Area (ha)</th><th>Added</th></tr></thead>
+              <tbody id="record-rows"><tr><td colspan="4">No records loaded yet.</td></tr></tbody>
+            </table>
+          </div>
+          <div class="pager">
+            <button id="previous-page" type="button" class="secondary" disabled>Previous</button>
+            <span id="page-status">Page 1</span>
+            <button id="next-page" type="button" class="secondary" disabled>Next</button>
+          </div>
+        </section>
+      </div>
+
+      <p class="footnote">Predictions and AI guidance are estimates, not guaranteed results or live market data. Check important crop, disease, pesticide, and price decisions with a local agricultural officer or Krishi Vigyan Kendra. <a href="/docs">Open the API reference</a>.</p>
+    </main>
+
+    <script>
+      const API = "/api/v1";
+      const apiKey = document.querySelector("#api-key");
+      const pageSize = 10;
+      let recordOffset = 0;
+
+      function showResult(id, message, isError = false) {
+        const element = document.getElementById(id);
+        element.textContent = message;
+        element.classList.add("visible");
+        element.classList.toggle("error", isError);
+      }
+
+      function showJson(id, value) {
+        showResult(id, JSON.stringify(value, null, 2));
+      }
+
+      async function apiRequest(path, { method = "GET", body } = {}) {
+        const headers = new Headers();
+        const key = apiKey.value.trim();
+        if (key) headers.set("X-API-Key", key);
+        if (body && !(body instanceof FormData)) headers.set("Content-Type", "application/json");
+
+        const response = await fetch(`${API}${path}`, {
+          method,
+          headers,
+          body: body instanceof FormData ? body : body ? JSON.stringify(body) : undefined,
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(payload.detail || `Request failed (${response.status})`);
+        }
+        return payload;
+      }
+
+      function wireJsonForm(formId, resultId, path, transform) {
+        document.getElementById(formId).addEventListener("submit", async (event) => {
+          event.preventDefault();
+          const button = event.currentTarget.querySelector("button[type=submit]");
+          button.disabled = true;
+          button.classList.add("loading");
+          try {
+            const values = Object.fromEntries(new FormData(event.currentTarget).entries());
+            const result = await apiRequest(path, { method: "POST", body: transform(values) });
+            showJson(resultId, result);
+          } catch (error) {
+            showResult(resultId, error.message, true);
+          } finally {
+            button.disabled = false;
+            button.classList.remove("loading");
+          }
+        });
+      }
+
+      wireJsonForm("yield-form", "yield-result", "/yield/predict", (v) => ({
+        crop: v.crop, crop_year: Number(v.crop_year), season: v.season, state: v.state,
+        area: Number(v.area), annual_rainfall: Number(v.annual_rainfall),
+        fertilizer: Number(v.fertilizer), pesticide: Number(v.pesticide),
+      }));
+      wireJsonForm("price-form", "price-result", "/prices/predict", (v) => v);
+      wireJsonForm("calendar-form", "calendar-result", "/crop-calendar/generate", (v) => ({
+        ...v, start_month: Number(v.start_month),
+      }));
+      wireJsonForm("chat-form", "chat-result", "/chatbot/ask", (v) => v);
+
+      document.getElementById("disease-form").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const form = event.currentTarget;
+        const values = new FormData(form);
+        const plant = values.get("plant");
+        const file = values.get("file");
+        if (!file || !file.size) {
+          showResult("disease-result", "Choose an image file first.", true);
+          return;
+        }
+        const button = form.querySelector("button[type=submit]");
+        button.disabled = true;
+        try {
+          const result = await apiRequest(`/diseases/${plant}/predict`, { method: "POST", body: values });
+          showJson("disease-result", result);
+        } catch (error) {
+          showResult("disease-result", error.message, true);
+        } finally {
+          button.disabled = false;
+        }
+      });
+
+      document.getElementById("db-check").addEventListener("click", async () => {
+        try {
+          const result = await apiRequest("/db/health");
+          showJson("db-result", result);
+        } catch (error) {
+          showResult("db-result", error.message, true);
+        }
+      });
+
+      async function loadRecords() {
+        const rows = document.getElementById("record-rows");
+        const previous = document.getElementById("previous-page");
+        const next = document.getElementById("next-page");
+        try {
+          const records = await apiRequest(`/crops?limit=${pageSize}&offset=${recordOffset}`);
+          rows.replaceChildren();
+          if (!records.length) {
+            const row = document.createElement("tr");
+            const cell = document.createElement("td");
+            cell.colSpan = 4;
+            cell.textContent = "No crop records on this page.";
+            row.append(cell);
+            rows.append(row);
+          }
+          for (const record of records) {
+            const row = document.createElement("tr");
+            for (const value of [record.crop_name, record.location, record.area_hectares, new Date(record.created_at).toLocaleString()]) {
+              const cell = document.createElement("td");
+              cell.textContent = String(value);
+              row.append(cell);
+            }
+            rows.append(row);
+          }
+          previous.disabled = recordOffset === 0;
+          next.disabled = records.length < pageSize;
+          document.getElementById("page-status").textContent = `Page ${Math.floor(recordOffset / pageSize) + 1}`;
+          document.getElementById("records-result").classList.remove("visible", "error");
+        } catch (error) {
+          showResult("records-result", error.message, true);
+        }
+      }
+
+      document.getElementById("record-form").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const form = event.currentTarget;
+        const values = Object.fromEntries(new FormData(form).entries());
+        try {
+          const result = await apiRequest("/crops", {
+            method: "POST",
+            body: { ...values, area_hectares: Number(values.area_hectares) },
+          });
+          showJson("record-result", result);
+          form.reset();
+          recordOffset = 0;
+          await loadRecords();
+        } catch (error) {
+          showResult("record-result", error.message, true);
+        }
+      });
+
+      document.getElementById("load-records").addEventListener("click", loadRecords);
+      document.getElementById("previous-page").addEventListener("click", () => {
+        recordOffset = Math.max(0, recordOffset - pageSize);
+        loadRecords();
+      });
+      document.getElementById("next-page").addEventListener("click", () => {
+        recordOffset += pageSize;
+        loadRecords();
+      });
+
+      const dateInput = document.querySelector('#price-form [name="date"]');
+      dateInput.value = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+      fetch("/health").then((response) => response.json()).then((health) => {
+        document.getElementById("api-status").textContent = health.status === "healthy" ? "API connected" : "API is unavailable";
+      }).catch(() => {
+        document.getElementById("api-status").textContent = "Could not reach the API";
+      });
+      loadRecords();
+    </script>
+  </body>
+</html>
