@@ -36,6 +36,22 @@ Edit `.env`: replace the local database passwords and add your `GEMINI_API_KEY`.
 If `.env` already exists, this command leaves it untouched. Then build and start
 the API and MySQL database:
 
+The important environment variables look like this:
+
+```dotenv
+GEMINI_API_KEY=replace_with_your_gemini_api_key
+GEMINI_MODEL=gemini-3.8-flash
+DB_NAME=agrismart_db
+DB_USER=agrismart_app
+DB_PASSWORD=change_me_app
+```
+
+These settings let the app connect to MySQL and authenticate requests to Gemini.
+Put your real Gemini key and any private passwords in your local `.env` file.
+Git ignores `.env` so those credentials do not become part of the repository;
+the README and `.env.example` use placeholders so others can configure their
+own copies safely.
+
 ```bash
 docker compose up --build
 ```
