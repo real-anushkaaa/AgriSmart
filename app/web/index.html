@@ -252,7 +252,7 @@
     </main>
 
     <script>
-      const API = "/api/v1";
+      let API = "/api/v1";
       const apiKey = document.querySelector("#api-key");
       const pageSize = 10;
       let recordOffset = 0;
@@ -410,12 +410,26 @@
 
       const dateInput = document.querySelector('#price-form [name="date"]');
       dateInput.value = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
-      fetch("/health").then((response) => response.json()).then((health) => {
-        document.getElementById("api-status").textContent = health.status === "healthy" ? "API connected" : "API is unavailable";
-      }).catch(() => {
-        document.getElementById("api-status").textContent = "Could not reach the API";
-      });
-      loadRecords();
+      async function initializeDashboard() {
+        try {
+          const [healthResponse, configResponse] = await Promise.all([
+            fetch("/health"),
+            fetch("/ui-config"),
+          ]);
+          if (!healthResponse.ok || !configResponse.ok) throw new Error("API is unavailable");
+          const [health, config] = await Promise.all([
+            healthResponse.json(),
+            configResponse.json(),
+          ]);
+          API = config.api_v1_prefix;
+          document.getElementById("api-status").textContent = health.status === "healthy" ? "API connected" : "API is unavailable";
+        } catch {
+          document.getElementById("api-status").textContent = "Could not reach the API";
+        }
+        await loadRecords();
+      }
+
+      initializeDashboard();
     </script>
   </body>
 </html>

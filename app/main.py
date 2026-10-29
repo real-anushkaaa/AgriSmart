@@ -30,6 +30,15 @@ if settings.cors_origin_list:
     )
 
 app.include_router(router)
+
+
+@app.get("/ui-config", include_in_schema=False)
+def ui_config():
+    return {
+        "api_v1_prefix": "/" + settings.api_v1_prefix.strip("/"),
+    }
+
+
 app.mount(
     "/ui",
     StaticFiles(directory=Path(__file__).resolve().parent / "web", html=True),

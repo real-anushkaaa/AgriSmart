@@ -39,3 +39,10 @@ def test_farmer_ui_is_served():
     assert response.status_code == 200
     assert "Crop yield estimate" in response.text
     assert "Plant health check" in response.text
+
+
+def test_ui_config_reports_api_prefix():
+    response = client.get("/ui-config")
+
+    assert response.status_code == 200
+    assert response.json() == {"api_v1_prefix": "/api/v1"}
