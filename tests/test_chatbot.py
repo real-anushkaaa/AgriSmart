@@ -63,3 +63,13 @@ def test_chatbot_reports_missing_gemini_configuration_as_503():
 
     assert response.status_code == 503
     assert response.json()["detail"] == "Gemini API is not configured."
+
+
+def test_chatbot_with_real_service_path_reports_missing_key_as_503():
+    response = client.post(
+        "/api/v1/chatbot/ask",
+        json={"question": "How can I protect my crops from pests?"},
+    )
+
+    assert response.status_code == 503
+    assert response.json()["detail"] == "Gemini API is not configured."

@@ -64,7 +64,7 @@ async def _read_image(file: UploadFile) -> bytes:
         image_bytes = await file.read(settings.max_image_upload_bytes + 1)
         if len(image_bytes) > settings.max_image_upload_bytes:
             raise HTTPException(
-                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                status_code=status.HTTP_413_CONTENT_TOO_LARGE,
                 detail="Image exceeds the upload size limit.",
             )
         if not image_bytes:

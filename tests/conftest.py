@@ -15,6 +15,7 @@ def development_api_settings(monkeypatch):
     monkeypatch.setattr(settings, "app_name", "AgriSmart API")
     monkeypatch.setattr(settings, "app_env", "development")
     monkeypatch.setattr(settings, "api_access_token", "")
+    monkeypatch.setattr(settings, "gemini_api_key", "")
 
 
 @pytest.fixture

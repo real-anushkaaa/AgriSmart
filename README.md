@@ -54,6 +54,8 @@ python -m pytest -v
 
 API tests use in-memory SQLite, and Gemini and model inference calls use stubs.
 The suite needs no MySQL server, Gemini key, or trained TensorFlow models.
+GitHub Actions runs the same suite on pushes and pull requests to `main` without
+fetching the large Git LFS artifacts.
 
 ## Retraining
 
